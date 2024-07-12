@@ -4,49 +4,61 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
-import java.util.Scanner;
 
 public class form3 {
     public JPanel mainPanel;
+    private JTextField marcatxt;
+    private JTextField cilindrajetxt;
+    private JTextField tipoCombustbletxt;
+    private JTextField colortxt;
+    private JTextField fechaCompratxt;
     private JTextField consultatxt;
-    private JButton buscarVehiculo;
+    private JButton buscar;
+    private JTextField propietariotxt;
 
     public form3() {
-        buscarVehiculo.addActionListener(new ActionListener() {
+        buscar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String url="jdbc:mysql://127.0.0.1:3306/Vehiculos";
-                String user="root";
-                String password="123456";
+                String url = "jdbc:mysql://127.0.0.1:3306/Vehiculo";
+                String user = "root";
+                String password = "1234";
 
-                try(Connection connection= DriverManager.getConnection(url,user,password)) {
-                    System.out.println("Conectado a la base de datos");
-                    Scanner sc=new Scanner(System.in);
-                    System.out.println("Ingrese la placa del vehiculo: ");
-                    String placa=sc.nextLine();
-                    String query="Select * from Vehiculos where consultatxt  ="+ placa ;
-                    Statement statement=connection.createStatement();
-                    ResultSet resultSet=statement.executeQuery(query);
-                    while(resultSet.next()){
-                        System.out.println("Placa: "+(resultSet.getString("PLACA")));
-                        System.out.println("Marca: "+(resultSet.getString("MARCA")));
-                        System.out.println("Cilindraje: "+(resultSet.getString("CILINDRAJE")));
-                        System.out.println("Tipo de combustible: "+resultSet.getString("TIPOCOMBUSTIBLE"));
-                        System.out.println("Color: "+resultSet.getString("COLOR"));
-                        System.out.println("Propietario: "+resultSet.getString("PROPIETARIO"));
-                        System.out.println("Fecha de Compra: "+resultSet.getString("FECHACOMPRA"));;
+                String id = consultatxt.getText();
 
+                Vehiculo vehiculo = new Vehiculo();
+
+                String sql = "SELECT * FROM vehiculo WHERE placa = ?";
+
+                try (Connection connection = DriverManager.getConnection(url, user, password)) {
+                    System.out.println("Conexión con la base de datos exitosa");
+
+                    PreparedStatement statement = connection.prepareStatement(sql);
+                    statement.setString(1, id);
+                    ResultSet resultSet = statement.executeQuery();
+
+                    if (resultSet.next()) {
+                        vehiculo.setMarca(resultSet.getString("marca"));
+                        vehiculo.setCilindraje(resultSet.getFloat("cilindraje"));
+                        vehiculo.setTipoCombustble(resultSet.getString("tipoCombustible"));
+                        vehiculo.setColor(resultSet.getString("color"));
+                        vehiculo.setPropietario(resultSet.getString("propietario"));
+                        vehiculo.setFechaCompra(resultSet.getString("fechaCompra"));
+
+                        marcatxt.setText(vehiculo.getMarca());
+                        cilindrajetxt.setText(String.valueOf(vehiculo.getCilindraje()));
+                        tipoCombustbletxt.setText(vehiculo.getTipoCombustble());
+                        colortxt.setText(vehiculo.getColor());
+                        propietariotxt.setText(vehiculo.getPropietario());
+                        fechaCompratxt.setText(vehiculo.getFechaCompra());
+                    } else {
+                        JOptionPane.showMessageDialog(mainPanel, "No se encontró un vehículo con esa placa.", "No encontrado", JOptionPane.INFORMATION_MESSAGE);
                     }
-                }
-                catch(SQLException e1){
-                    System.out.println(e1.getMessage());
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(mainPanel, "Error al buscar el vehículo.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
-
         });
-    }
-
-    public JPanel getMainPanel3() {
-        return mainPanel;
     }
 }
